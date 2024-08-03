@@ -1,6 +1,7 @@
 "use client";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/router";
+import { useEffect } from "react";
 
 export default function ProfileCard({publicKey}: {
     publicKey: string
@@ -60,9 +61,28 @@ export default function ProfileCard({publicKey}: {
 function Assets({publicKey}: {
     publicKey: string
 }) {
+
+    const [copied, setCopied] = useState(false);
+    useEffect(() => {
+        let timeout = setTimeout(() => {
+            setCopied(false);
+        }, 3000);
+        return() => {
+            clearTimeout(timeout);
+        }
+    }, [copied])
     return (
         <div className="text-slate-400">
-            
+            Account Assets
+            <br />
+            <div className="flex justify-between">
+                <div></div>
+                <div onClick={() => {
+                    navigator.clipboard.writeText(publicKey);
+                    setCopied(true);
+                
+                }} className="bg-gray-300 rounded-full text-gray-500 h-10 text-sm items-center px-3 pt-2">{copied ? "Copied" :"Your Wallet Balance"}</div>
+            </div>
         </div>
     )
 }
