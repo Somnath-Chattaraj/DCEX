@@ -1,7 +1,11 @@
 "use client";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/router";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
+import { useTokens } from "../api/hooks/useTokens";
+import { TokenList } from "./TokenList";
+
+
 
 export default function ProfileCard({publicKey}: {
     publicKey: string
@@ -10,7 +14,7 @@ export default function ProfileCard({publicKey}: {
     // const router = useRouter();
     if (session.status === "loading") {
         return (
-            <div className="flex flex-col items-center justify-center w-full h-screen ">
+            <div className="flex flex-col items-center justify-center w-full h-full ">
                 Loading....
             </div>
         )
@@ -22,7 +26,7 @@ export default function ProfileCard({publicKey}: {
     }
 
     return (
-        <div className="flex flex-col items-center pt-20 bg-blue-100 w-full h-screen ">
+        <div className="flex flex-col items-center pt-20 bg-blue-100 w-full h-full p-10">
 
         <div className="items-center justify-center bg-white shadow-2xl rounded-lg p-5">
             <div className="flex flex-cols py-4">
@@ -42,17 +46,14 @@ export default function ProfileCard({publicKey}: {
                 )}
             </div>
             <div className="text-gray-400 py-2 text-sm">TipLink Account Assets</div>
-            <div className="flex justify-between">
-                <div className="text-5xl font-bold flex">$0.00 <p className="text-gray-500 text-2xl font-bold pt-4 pl-1">USD</p></div>
-                <div className="bg-gray-300 rounded-full text-gray-500 h-10 text-sm items-center px-3 pt-2">Your Wallet Balance</div>
-            </div>
-            <div className="flex py-5 justify-between">
+            <Assets publicKey={publicKey} />
+            {/* <div className="flex py-5 justify-between">
                 <button className="bg-blue-600 text-white rounded-md py-2 px-16 ">Send</button>
                 <button className="hover:bg-blue-300 bg-blue-200 text-blue-700 rounded-md py-2 px-16 ml-2">Add Funds</button>
                 <button className="hover:bg-blue-300 bg-blue-200 text-blue-700 rounded-md py-2 px-16 ml-2">Withdraw</button>
                 <button className="hover:bg-blue-300 bg-blue-200 text-blue-700 rounded-md py-2 px-16 ml-2">Swap</button>
             </div>
-            <Assets publicKey={publicKey} />
+            <Assets publicKey={publicKey} /> */}
         </div>
         </div>
     )
@@ -63,6 +64,7 @@ function Assets({publicKey}: {
 }) {
 
     const [copied, setCopied] = useState(false);
+    const {tokenBalances, loading} = useTokens(publicKey);
     useEffect(() => {
         let timeout = setTimeout(() => {
             setCopied(false);
@@ -71,17 +73,32 @@ function Assets({publicKey}: {
             clearTimeout(timeout);
         }
     }, [copied])
+
+    if (loading) {
+        return (
+            <div className="flex flex-col items-center justify-center w-full h-screen ">
+                Loading....
+            </div>
+        )
+    }
     return (
         <div className="text-slate-400">
             Account Assets
             <br />
+            <div className="flex justify-between pt-2 m-12">
             <div className="flex justify-between">
-                <div></div>
+                <div className="text-5xl font-bold flex">${tokenBalances?.totalBalance || 0.00} <p className="text-gray-500 text-2xl font-bold pt-4 pl-1">USD</p></div>
+                {/* <div className="bg-gray-300 rounded-full text-gray-500 h-10 text-sm items-center px-3 pt-2">Your Wallet Balance</div> */}
                 <div onClick={() => {
                     navigator.clipboard.writeText(publicKey);
                     setCopied(true);
-                
-                }} className="bg-gray-300 rounded-full text-gray-500 h-10 text-sm items-center px-3 pt-2">{copied ? "Copied" :"Your Wallet Balance"}</div>
+                    
+                    }} className="bg-gray-300 rounded-full text-gray-500 cursor-pointer  ml-20 h-11 text-sm items-center px-3 pt-3">{copied ? "Copied" :"Your Wallet Balance"}</div>
+                </div>
+            </div>
+
+            <div className="pt-7 rounded-lg bg-slate-50 p-12">
+                <TokenList tokens={tokenBalances?.tokens || []} />
             </div>
         </div>
     )

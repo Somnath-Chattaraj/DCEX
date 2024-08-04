@@ -1,12 +1,12 @@
-import NextAuth from "next-auth";
+import NextAuth, { NextAuthOptions } from "next-auth";
 import { signOut, signIn, useSession } from "next-auth/react";
 import GoogleProvider from "next-auth/providers/google";
 import db from "@/app/db";
 import { Keypair } from "@solana/web3.js";
-import { Session } from "inspector";
+import { Session } from "next-auth";
 
-export interface session extends Session {
-    user : {
+export interface CustomSession extends Session {
+    user: {
         email: string,
         name: string,
         image: string,
@@ -14,7 +14,7 @@ export interface session extends Session {
     }
 }
 
-export const authConfig = NextAuth({
+export const authConfig: NextAuthOptions = {
   providers: [
     GoogleProvider({
       clientId: process.env.GOOGLE_CLIENT_ID ?? "",
@@ -22,45 +22,41 @@ export const authConfig = NextAuth({
     }),
   ],
   callbacks: {
-
-    // @ts-ignore
-    session: ({ session, token }: any) : session => {
-        const newSession: session = session as session;
+    async session({ session, token }) {
+        const newSession: CustomSession = session as CustomSession;
         if (newSession.user && token.uid) {
+            // @ts-ignore
             newSession.user.uid = token.uid ?? "";
         }
         return newSession;
     },
-
-    async jwt({ token, account, profile} : any ) {
-        const user = await db.user.findFirst({
-            where: {
-                sub: account?.providerAccountId ?? ""
+    async jwt({ token, account, profile }) {
+        if (account) {
+            const user = await db.user.findFirst({
+                where: {
+                    sub: account.providerAccountId ?? ""
+                }
+            });
+            if (user) {
+                token.uid = user.id;
             }
-        })
-        if (user) {
-            token.uid = user.id;
         }
         return token;
     },
-
-
-    // @ts-ignore
-    async signIn({ user, account, profile, email, credentials}) {
+    async signIn({ user, account }) {
         if (account?.provider === "google") {
             const email = user.email;
             if (!email) {
-                return false
+                return false;
             }
-            
-            
+
             const userDb = await db.user.findUnique({
                 where: {
                     username: email
                 },
             });
             if (userDb) {
-                return true
+                return true;
             }
 
             const keypair = Keypair.generate();
@@ -76,19 +72,21 @@ export const authConfig = NextAuth({
                         create: {
                             publicKey: publicKey,
                             privateKey: privateKey.toString(),
-                        }  
+                        }
                     },
                     inrWalletId: {
                         create: {
                             balance: 0,
-                        }  
-                    }  
+                        }
+                    }
                 }
-            })
+            });
 
-            return true
-            
+            return true;
         }
-        return false
+        return false;
     },
-}});
+  },
+};
+
+export default NextAuth(authConfig);
