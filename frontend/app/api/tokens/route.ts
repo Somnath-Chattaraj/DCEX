@@ -1,4 +1,5 @@
-import { SUPPORTED_TOKENS, connection, getSupportedTokens } from "@/app/libs/constants";
+import { connection, getSupportedTokens } from "@/app/libs/constants";
+import { SUPPORTED_TOKENS } from "@/app/libs/token";
 import { getAccount, getAssociatedTokenAddress, getMint } from "@solana/spl-token";
 import { LAMPORTS_PER_SOL, PublicKey } from "@solana/web3.js";
 import { NextRequest, NextResponse } from "next/server";
