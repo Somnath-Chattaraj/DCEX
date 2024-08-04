@@ -28,3 +28,14 @@ export const SecondaryButton = ({children, onClick, prefix}: {
     </button>
   )
 }
+
+
+export const TabButton = ({active, children, onClick}: {
+  active: boolean,
+  children: React.ReactNode,
+  onClick: () => void
+}) => {
+  return (
+    <button className={`text-white rounded-md py-2 mx-1 px-10 ${active ? "bg-blue-600" : "bg-blue-400"}` } onClick={onClick}>{children}</button>
+  )
+}

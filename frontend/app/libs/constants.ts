@@ -1,49 +1,18 @@
 import { Connection } from "@solana/web3.js";
 import axios from "axios";
+import { SUPPORTED_TOKENS } from "./token";
 
 
 let LAST_UPDATED: number | null = null;
 let prices: { [key: string]: { price: string } } = {};
 const TOKEN_PRICE_REFRESH_INTERVAL = 1000 * 60;
 
-export interface TokenDetails {
-    name: string;
-    mint: string;
-    native: boolean;
-    price: string;
-    images: string[];
-}
 
-export const SUPPORTED_TOKENS: TokenDetails[] = [
-    {
-        name: "USDC",
-        mint: "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
-        native: false,
-        price: "1",
-        images: [
-            "../../public/USDC.webp",
-        ],
-    },
-    {
-        name: "USDT",
-        mint: "Es9vMFrzaCERmJfrF4H2FYD4KCoNkY11McCe8BenwNYB",
-        native: false,
-        price: "1",
-        images: [
-            "../../public/USDT.webp",
-        ],
-    },
-    {
-        name: "SOL",
-        mint: "So11111111111111111111111111111111111111112",
-        native: true,
-        price: "1",
-        images: [
-            "../../public/SOL.webp",
-        ],
-    },
-];
 
+
+
+// export const connection = new Connection(`https://solana-mainnet.g.alchemy.com/v2/${process.env.NEXT_PUBLIC_ALCHEMY_API_KEY}`);
+// export const connection = new Connection(`https://solana-mainnet.g.alchemy.com/v2/EspGgEsKtp6xdG1-P32lj9raEFUlgXNc`);
 export const connection = new Connection("https://api.mainnet-beta.solana.com");
 
 export async function getSupportedTokens() {
