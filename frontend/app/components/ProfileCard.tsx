@@ -2,10 +2,11 @@
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
-import { useTokens } from "../api/hooks/useTokens";
+import { TokenWithBalance, useTokens } from "../api/hooks/useTokens";
 import { TokenList } from "./TokenList";
 import { type } from "os";
 import { TabButton } from "./Button";
+import { Swap } from "./Swap";
 
 
 type Tab = "Tokens" | "Send" | "Add Funds" | "Withdraw" | "Swap";
@@ -21,6 +22,7 @@ export default function ProfileCard({publicKey}: {
 }) {
     const session = useSession();
 const [selectedTab, setSelectedTab] = useState<Tab>("Tokens");
+const {tokenBalances, loading} = useTokens(publicKey);
     // const router = useRouter();
     if (session.status === "loading") {
         return (
@@ -66,7 +68,10 @@ const [selectedTab, setSelectedTab] = useState<Tab>("Tokens");
             }
             </div>
             <div className={`${selectedTab === "Tokens" ? "visible" : "hidden"} flex py-5 justify-between`}>
-                <Assets publicKey={publicKey} /> 
+                <Assets publicKey={publicKey} tokenBalances={tokenBalances} loading={loading} /> 
+            </div>
+            <div className={`${selectedTab === "Swap" ? "visible" : "hidden"} flex py-5 justify-between`}>
+                <Swap publicKey={publicKey} tokenBalances={tokenBalances} loading={loading}/> 
             </div>
             {/* <div className="flex py-5 justify-between">
                 <button className="bg-blue-600 text-white rounded-md py-2 px-16 ">Send</button>
@@ -80,12 +85,17 @@ const [selectedTab, setSelectedTab] = useState<Tab>("Tokens");
     )
 }
 
-function Assets({publicKey}: {
+function Assets({publicKey, tokenBalances, loading}: {
     publicKey: string,
+    tokenBalances:{
+        totalBalance: number,
+        tokens: TokenWithBalance[]
+    } | null,
+    loading: boolean,
 }) {
 
     const [copied, setCopied] = useState(false);
-    const {tokenBalances, loading} = useTokens(publicKey);
+    
     useEffect(() => {
         let timeout = setTimeout(() => {
             setCopied(false);
